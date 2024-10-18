@@ -1,14 +1,14 @@
 from flask import Flask, jsonify, Response, send_from_directory
 from flask_cors import CORS  # 导入 CORS
 import prometheus_client
-from prometheus_client import Counter
+from monitoring import start_monitoring  # 导入监控模块
 
 
 app = Flask(__name__, static_folder='../frontend')
 CORS(app)  # 启用 CORS
 
-requests_total_get_answer=Counter('get_answer_total','Get answer requested.')
-requests_total_get_answer.inc()
+# 启动监控
+start_monitoring(app)
 
 
 @app.route('/ok', methods=['GET'])
@@ -21,7 +21,7 @@ def not_accessible_endpoint():
         # 模拟可能引发异常的操作
         # 这里可以放置您的业务逻辑代码
         # 例如: raise ValueError("一个示例异常")
-        # raise Exception("一个示例异常")
+        raise Exception("一个示例异常")
         # 如果没有异常发生，返回成功的响应
         return jsonify({"message": "此接口可以正常访问o "}), 200
     except Exception as e:
@@ -34,7 +34,7 @@ def root_endpoint():
 
 @app.route('/metrics')
 def requests_count():
-    return Response(prometheus_client.generate_latest(requests_total_get_answer),mimetype="text/plain")
+    return Response(prometheus_client.generate_latest(),mimetype="text/plain")
 
 
 if __name__ == '__main__':
