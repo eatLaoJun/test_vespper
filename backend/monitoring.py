@@ -42,5 +42,11 @@ def start_monitoring(app):
             endpoint=request.path,
             exception_type=type(error).__name__
         ).inc()
+        # 明确记录500错误
+        REQUEST_COUNT.labels(
+            method=request.method,
+            endpoint=request.path,
+            http_status=500
+        ).inc()
         # 这里可以添加您原有的异常处理逻辑
         return jsonify({"error": "Internal Server Error"}), 500
