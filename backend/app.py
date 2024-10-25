@@ -1,10 +1,8 @@
 from flask import Flask, jsonify, Response, send_from_directory
 from flask_cors import CORS  # 导入 CORS
 import prometheus_client
-from monitoring import start_monitoring  # 导入监控模块
-from prometheus_client import Counter
+from monitoring import start_monitoring, EXCEPTION_COUNT  # 导入监控模块
 
-EXCEPTION_COUNTER = Counter('flask_exception_count', 'App Exception Count', ['endpoint', 'exception_type', 'method'])
 
 
 app = Flask(__name__, static_folder='../frontend')
@@ -29,7 +27,7 @@ def not_accessible_endpoint():
         return jsonify({"message": "此接口可以正常访问o "}), 200
     except Exception as e:
         # 如果捕获到异常，返回错误响应
-        EXCEPTION_COUNTER.labels(endpoint='/o', exception_type=type(e).__name__, method='GET').inc()
+        EXCEPTION_COUNT.labels(endpoint='/o', exception_type=type(e).__name__, method='GET').inc()
         return jsonify({"error": "内部服务器错误", "details": str(e)}), 500
 
 @app.route('/')
